@@ -9,7 +9,7 @@
 
 For more information, please see the blog post on LogRhythm's Carbon Black integration:
 
-	https://logrhythm.com/blog/
+	[Coming Soon!]
 
 ## Introduction:
 
@@ -84,3 +84,27 @@ If there are issues encountered and the script isn't giving proper output, using
 ## Future Goals:
 
 Ideally, this script could be used with an event feed from Carbon Black. We do not currently have a script that retrieves the alerts feed to supplement this. In a dream scenario, an alert for a file with a high risk score would come through, and this script would be used to aid in automating the ban of the file, killing the process if it exists, retrieving a copy of it, followed by deleting it. In extreme scenarios, the system would also be isolated and shutdown by executing a shutdown or locked to prevent user intervention during response and forensics.
+
+## License
+
+Copyright (c) 2016, LogRhythm
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name of Greg Foss, LogRhythm, LogRhythm Labs, nor the names of any of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+* This script is not technically 'forensically sound' as it will write to the target host. Please keep this in mind.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
