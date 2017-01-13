@@ -66,7 +66,7 @@ Outside of the obvious available commands, this script provides functionality to
 
 All commands are executed within a switch command found in the main function. In order to add a command (generally speaking), simply add another switch statement. From there to prepare the command parameters, add the following two lines of code to the body of the switch statement command:
 
-$body = @{"name"="<static command name as specified by Carbon Black API>"; "object"=$object} | ConvertTo-Json
+	$body = @{"name"="<static command name as specified by Carbon Black API>"; "object"=$object} | ConvertTo-Json
 $returnVal, $Session_id = execute_response($body)
 
 The $object variable is the parameter that is passed in as a command line argument when it is executed. It is possible to get more complex or create entirely customized executions as seen with the "get" and "isolate" commands. Anything with file transfer (i.e. commands like "get" and "put") usually require additional API calls. This example will background file transfers and file creation (like "memdump") in order to expedite response for any programs that expect output and have feedback timeouts. It is is NOT necessary to background processes NOR are exit codes; They were added for formality more than necessity.
