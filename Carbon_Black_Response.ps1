@@ -8,9 +8,7 @@
   #==========================================#
 
 # Copyright 2016 LogRhythm Inc.   
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at;
-# http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the specific language governing permissions and limitations under the License.
+# Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 Param
 (
@@ -102,7 +100,6 @@ function wait_for_session_active($Session_id){
     $finished = $false
     while($finished -eq $false){
         $statusURL = "$baseURL/api/v1/cblr/session/$Session_id"
-        #Write-Host $statusURL
         try{
             $statusResponse = Invoke-RestMethod -uri $statusURL -Headers $coreHeaders 
         }
@@ -137,7 +134,14 @@ function acquire_sensor_id($Hostname){
     $url = "$baseURL/api/v1/sensor?hostname=$Hostname"
     $response = Invoke-RestMethod -uri $url -Headers $coreHeaders
     Write-Host $response
-    return $response.id
+    #In case cb deployment is corrupt with client device having multiple ID's
+    if($response.id.GetType() -eq [System.Object[]]){
+        Write-Host "Sensor_id: ", $response.id[0]
+        return $response.id[0]
+    }else{
+        Write-Host "Sensor_id: ", $response.id
+        return $response.id 
+    }
 }
 
 function create_session($Sensor_id){
@@ -181,10 +185,6 @@ function command_handler($Session_id, $body){
 function execute_response($body){
     Write-Host "Beginning execution..."
     $sensor_id = acquire_sensor_id($hostname)
-    #In case cb deployment is corrupt with client device having multiple ID's
-    if($sensor_id.GetType() -eq [System.Object[]]){
-        $sensor_id = $sensor_id[0]
-    }
     $session_id = create_session($sensor_id)
     Write-Host "Session is now active."
     $returnVal = command_handler $session_id $body
@@ -192,6 +192,11 @@ function execute_response($body){
 }
 
 function main{
+    #Remove / at end of baseURL if present to avoid issues with URL 
+    if($baseURL[$baseURL.length - 1] -eq '/'){
+        $baseURL = $baseURL.Substring(0, $baseURL.length - 1)
+    }
+
     switch($command.ToLower()){
 
         "ps"{
@@ -293,13 +298,11 @@ function main{
     
                 $session_id = create_session($sensor_id)
                 Write-Host "Session is now active."
-                #$returnVal = command_handler $session_id $body
                 Write-Host "Executing $command..."
                 $url = "$baseURL/api/v1/cblr/session/$Session_id/command"
                 $response = Invoke-RestMethod -uri $url -Headers $coreHeaders -Method Post -Body $body
                 $command_id = $response.id
 
-                #$commandResponse = fetch_command $Session_id $command_id
                 $scriptBlock = {
                     param($baseURL, $session_id, $command_id, $coreHeaders)
                     try{
@@ -333,12 +336,11 @@ main
 
 Write-Host "$command on $object for host $hostname executed successfully."
 exit 0
-
 # SIG # Begin signature block
 # MIIdxgYJKoZIhvcNAQcCoIIdtzCCHbMCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUggKdWoL081XN7oIdLTPE6M8D
-# Ff2gghi2MIID7jCCA1egAwIBAgIQfpPr+3zGTlnqS5p31Ab8OzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJXuFRY7lxdwpJVKAIRJ/oQJU
+# Rtmgghi2MIID7jCCA1egAwIBAgIQfpPr+3zGTlnqS5p31Ab8OzANBgkqhkiG9w0B
 # AQUFADCBizELMAkGA1UEBhMCWkExFTATBgNVBAgTDFdlc3Rlcm4gQ2FwZTEUMBIG
 # A1UEBxMLRHVyYmFudmlsbGUxDzANBgNVBAoTBlRoYXd0ZTEdMBsGA1UECxMUVGhh
 # d3RlIENlcnRpZmljYXRpb24xHzAdBgNVBAMTFlRoYXd0ZSBUaW1lc3RhbXBpbmcg
@@ -476,22 +478,22 @@ exit 0
 # MDEuMCwGA1UEAxMlVmVyaVNpZ24gQ2xhc3MgMyBDb2RlIFNpZ25pbmcgMjAxMCBD
 # QQIQb86k4QlOrKAuOolBFzl1RTAJBgUrDgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEK
 # MAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3
-# AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUb2qjMxwX2PuuwlOG
-# yyrQJryFhRAwDQYJKoZIhvcNAQEBBQAEggEAmpfBG74483DKjXDre36FHjc+5Onb
-# /5aQarCF8dau0DicBC4wE4sLJC2cyQKBwgL1LzE8sb5iDeT6jxy1IVZsbzBQD7aR
-# 4AmIU8iF7jJvov5J8lWc6i17+n7u58OAys+5Syg2pbTYknblawE8he7ZuliyxIwU
-# SgDWRbcHYdIgb4rhv6oLsJQkmXhba3uE5sK6XQBSiSNCL4RTDhbZG98eMdwNJ+oo
-# veTe8qVeCMuf8s0G8rCHbnKuiSAZTYWxxIrp1c5TyVDjW7y3dDtuxmcVmIld77gR
-# hVV4eOfB7KDVaodOQ7rrdxpt3Vyluv8wR/zc+uiPHTRkmGNiDiX4zw6ZeqGCAgsw
+# AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUohZSyT0JPCs47bLj
+# Nt9vsuptd40wDQYJKoZIhvcNAQEBBQAEggEAVG0Y8h28JStkFEQv4V3g5BSq4bjb
+# /uwAne4oR2NTo5RA7Ikpgk7jMJ8y2Ed3MnaHcidf11obbgR/u+d4BHMVwmGv5Dk4
+# Td96QW5sBpD2xk2PVXkOgsOmxxaqr1N8eJrgehKPCjp+3oDvAu0P/1d5uiI/dgft
+# j5sMqy0DnWhYolcPcfiJdCFft8SzCT8/cnDqIl/Bw1te/qw+A2d7MMnLuJI8I0aQ
+# 2SWBggKPshBMl23HGdf7QwknZluFcoxNmvl6RsOu+Bktdp7z6fiwbNbvxXnOVDuk
+# fjntQw2g0yYCYp6A2jcorAYgjU8p5Q3BkdsJKOO1eG8Mqx0yUIe1cl8EPKGCAgsw
 # ggIHBgkqhkiG9w0BCQYxggH4MIIB9AIBATByMF4xCzAJBgNVBAYTAlVTMR0wGwYD
 # VQQKExRTeW1hbnRlYyBDb3Jwb3JhdGlvbjEwMC4GA1UEAxMnU3ltYW50ZWMgVGlt
 # ZSBTdGFtcGluZyBTZXJ2aWNlcyBDQSAtIEcyAhAOz/Q4yP6/NW4E2GqYGxpQMAkG
 # BSsOAwIaBQCgXTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJ
-# BTEPFw0xNjExMTYyMDUwMjJaMCMGCSqGSIb3DQEJBDEWBBTyC1uWPrNCtYVbFsGM
-# 7gA0fnUYtzANBgkqhkiG9w0BAQEFAASCAQCOcQjLt2hMkcHb90zJNhYvSlmRUWkx
-# xeXxTKCt+HqrF+FWYtAAzeenYwt+9jLlpuEbehM5MyTBbWUyx5TXm9sAuK5Kqxg8
-# DKYEcfLNTGZIOOD9cx+oYRniu7/T6j+WgTymKpTTVo3GJZ8zQp1Wvl+hxcAFKaqo
-# omUDa+W9LhkkYjDAMP1n1O7MMYNaZD12YTi8tSFB+x5gI7Vjm7nZZB+ow9gPOy0/
-# 8OPXHyEMctVUlaMx+XMqDU0t5j+wm8vwmvUvnxdp/+PsPPjFSyANK3cYy0w4+pk+
-# lNvbdtggz2sLkzL8M1bQdtIBm8oq2vhOy5mMxwXWxC4v4fCgBbkptIax
+# BTEPFw0xNzAxMTMwMDE1MjVaMCMGCSqGSIb3DQEJBDEWBBQYZvMkedZDLl20rdtf
+# SE/ctrUPkDANBgkqhkiG9w0BAQEFAASCAQBJ3l+qb/+MzBxmV1SIA0CNc78w21E4
+# aZC98xA+aZcc34fnTjqigt+UckZ/VJFTNfSedxFDvwo+dS38qi4nwa224TSltKLh
+# ibyKbtjcxUO5Eg8zEzTwFFaEBvKQ3Wp+PiB3q/Tx2/AGT3U5loujrSsnRj4fuOnu
+# 8oskgPXcizepk+JjvHMpqp6brYKw3ci/695UYC1LIDT+dvqfoxESnpqM7J7p6E8v
+# POOyMdBXdc7cGlEygr3sATpddFgfV4YErsB4ECUOYcLTbWD2P7Eux+NQRNt5IKcN
+# UOxZjUdlXDmQRvRqzF8SsznpoOxRS75scd2LNXirXf086wwNJSCcd4Q3
 # SIG # End signature block
