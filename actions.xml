@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<remv1:Remediation-Plugin xmlns:remv1="RemediationVersion1.xsd" Name="Carbon Black Response" Version="1" IsLogRhythmPlugin="true">
+<remv1:Remediation-Plugin xmlns:remv1="RemediationVersion1.xsd" Name="Carbon Black Response" Version="1" IsLogRhythmPlugin="true" Guid="be0d9978-692f-48ee-b8a9-dc046b05e76f">
   <!-- Kill Process on Remote System -->
   <remv1:Action Name="Kill Process" Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe">
     <remv1:ConstantParameter Name="Script" Switch="-file Carbon_Black_Response.ps1" Order="1" />
