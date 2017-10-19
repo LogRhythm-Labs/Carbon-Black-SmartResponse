@@ -192,6 +192,30 @@ function execute_response($body){
 }
 
 function main{
+#-----------------------------------------------------------------------------------------
+#-------------------------------Ignore Self-Signed Certificates---------------------------
+#-----------------------------------------------------------------------------------------
+if (-not ([System.Management.Automation.PSTypeName]'ServerCertificateValidationCallback').Type)
+{
+    add-type @"
+    using System.Net;
+    using System.Security.Cryptography.X509Certificates;
+    public class TrustAllCertsPolicy : ICertificatePolicy {
+        public bool CheckValidationResult(
+            ServicePoint srvPoint, X509Certificate certificate,
+            WebRequest request, int certificateProblem) {
+            return true;
+        }
+    }
+"@
+    Add-Type $certCallback
+}
+$AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+[System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
+[System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+#-----------------------------------------------------------------------------------------
+#-------------------------------End of Ignore Self-Signed Certificates--------------------
+#-----------------------------------------------------------------------------------------
     #Remove / at end of baseURL if present to avoid issues with URL 
     if($baseURL[$baseURL.length - 1] -eq '/'){
         $baseURL = $baseURL.Substring(0, $baseURL.length - 1)
