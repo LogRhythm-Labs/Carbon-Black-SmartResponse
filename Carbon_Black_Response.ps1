@@ -196,7 +196,7 @@ function execute_response($body){
 }
 
 function main{
-If ($Insecure)
+If ($Insecure == $true)
 {
 #-----------------------------------------------------------------------------------------
 #-------------------------------Ignore Self-Signed Certificates---------------------------
