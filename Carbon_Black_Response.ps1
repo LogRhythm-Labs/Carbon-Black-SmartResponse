@@ -17,7 +17,8 @@ Param
     [string]$object,
     [string]$key,
     [string]$location,
-    [string]$baseURL
+    [string]$baseURL,
+    [switch]$Insecure = $false
 )
 
 $coreHeaders = @{
@@ -29,19 +30,22 @@ $helpMessage = @"
 This script is designed to automate certain functions within Carbon Black Live Response.
 Through a series of API calls the script can perform and array of functions.\
 
-The script accepts up to 3 arguments. They are (in order) as follows
+The script accepts up to 4 arguments. They are (in order) as follows
     - The hostname of the system you wish to interact with
     - The command you would like to perform
     - The unique parameter for each command
+    - The insecure flag to ignore self-signed certificate errors and SSL/TLS Protocol errors
 
-Example: 'Carbon_Black_Response.ps1' PW3797 isolate true
-                                     ^      ^       ^
-                                     |      |       |
-                                  Hostname  |       |
-                                            |       |
-                                          Command   |
-                                                    |
-                                             Command Object
+Example: 'Carbon_Black_Response.ps1' PW3797 isolate true -Insecure
+                                     ^      ^       ^         ^
+                                     |      |       |         |
+                                  Hostname  |       |         |
+                                            |       |         |
+                                          Command   |         |
+                                                    |         |
+                                             Command Object   |
+                                                              |
+                                             Ignore Certificate and Protocol Errors
 
     The above example would enable isolation on the system PW3797
 
@@ -192,27 +196,37 @@ function execute_response($body){
 }
 
 function main{
+If ($Insecure)
+{
 #-----------------------------------------------------------------------------------------
 #-------------------------------Ignore Self-Signed Certificates---------------------------
 #-----------------------------------------------------------------------------------------
-if (-not ([System.Management.Automation.PSTypeName]'ServerCertificateValidationCallback').Type)
-{
-    add-type @"
-    using System.Net;
-    using System.Security.Cryptography.X509Certificates;
-    public class TrustAllCertsPolicy : ICertificatePolicy {
-        public bool CheckValidationResult(
-            ServicePoint srvPoint, X509Certificate certificate,
-            WebRequest request, int certificateProblem) {
-            return true;
+    try
+    {
+    if (-not ([System.Management.Automation.PSTypeName]'ServerCertificateValidationCallback').Type)
+    {
+        add-type @"
+        using System.Net;
+        using System.Security.Cryptography.X509Certificates;
+        public class TrustAllCertsPolicy : ICertificatePolicy {
+            public bool CheckValidationResult(
+                ServicePoint srvPoint, X509Certificate certificate,
+                WebRequest request, int certificateProblem) {
+                return true;
+            }
         }
-    }
 "@
-    Add-Type $certCallback
+        Add-Type $certCallback
+    }
+    $AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+    [System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
+    [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+    }
+    catch{
+            Write-Error "Bad URL: $statusURL"
+            exit 1
+        }
 }
-$AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
-[System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
-[System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 #-----------------------------------------------------------------------------------------
 #-------------------------------End of Ignore Self-Signed Certificates--------------------
 #-----------------------------------------------------------------------------------------
