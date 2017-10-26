@@ -1,8 +1,8 @@
 
-		LogRhythm Security Operations
-		Carbon Black - SmartResponse
-		michael . swisher @ logrhythm . com
-		v0.1  --  November, 2016
+	LogRhythm Security Operations
+	Carbon Black - SmartResponse
+	michael . swisher @ logrhythm . com
+	v0.1  --  November, 2016
 
 
 ## Carbon Black PowerShell API Script
