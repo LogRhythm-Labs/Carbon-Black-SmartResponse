@@ -18,6 +18,7 @@
       <remv1:StringParameter Name="API Key" Switch="-key " Order="5" />
     </remv1:EncryptedParameter>
     <remv1:StringParameter Name="Carbon Black Server URL" Switch="-baseURL " Order="6" />
+    <remv1:StringParameter Name="Disable certificate checks for self-signing (true/false)" Switch="-insecure " Order="7" />
   </remv1:Action>
   <!-- Get File on Remote Host -->
   <remv1:Action Name="Get File" Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe">
@@ -38,6 +39,7 @@
     </remv1:EncryptedParameter>
     <remv1:StringParameter Name="Local Output Directory" Switch="-location " Order="6" />
     <remv1:StringParameter Name="Carbon Black Server URL" Switch="-baseURL " Order="7" />
+    <remv1:StringParameter Name="Disable certificate checks for self-signing (true/false)" Switch="-insecure " Order="8" />
   </remv1:Action>
   <!-- Isolate Remote Host Networking -->
   <remv1:Action Name="Isolate Host" Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe">
@@ -57,6 +59,7 @@
       <remv1:StringParameter Name="API Key" Switch="-key " Order="5" />
     </remv1:EncryptedParameter>
     <remv1:StringParameter Name="Carbon Black Server URL" Switch="-baseURL " Order="6" />
+    <remv1:StringParameter Name="Disable certificate checks for self-signing (true/false)" Switch="-insecure " Order="7" />
   </remv1:Action>
   <!-- Delete File on Remote Host -->
   <remv1:Action Name="Delete File" Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe">
@@ -76,6 +79,7 @@
       <remv1:StringParameter Name="API Key" Switch="-key " Order="5" />
     </remv1:EncryptedParameter>
     <remv1:StringParameter Name="Carbon Black Server URL" Switch="-baseURL " Order="6" />
+    <remv1:StringParameter Name="Disable certificate checks for self-signing (true/false)" Switch="-insecure " Order="7" />
   </remv1:Action>
   <!-- Dump Remote Host Memory -->
   <remv1:Action Name="Dump Memory" Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe">
@@ -95,5 +99,6 @@
       <remv1:StringParameter Name="API Key" Switch="-key " Order="5" />
     </remv1:EncryptedParameter>
     <remv1:StringParameter Name="Carbon Black Server URL" Switch="-baseURL " Order="6" />
+    <remv1:StringParameter Name="Disable certificate checks for self-signing (true/false)" Switch="-insecure " Order="7" />
   </remv1:Action>
 </remv1:Remediation-Plugin>
