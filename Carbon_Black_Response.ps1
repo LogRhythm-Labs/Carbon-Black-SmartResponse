@@ -4,10 +4,10 @@
   # LogRhythm Security Operations            #
   # Carbon Black - SmartResponse             #
   # michael . swisher @ logrhythm . com      #
-  # v0.1  --  November, 2016                 #
+  # v0.2  --  November, 2017                 #
   #==========================================#
 
-# Copyright 2016 LogRhythm Inc.   
+# Copyright 2017 LogRhythm Inc.   
 # Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 Param
