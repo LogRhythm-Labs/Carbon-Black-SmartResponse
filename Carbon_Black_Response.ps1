@@ -289,26 +289,54 @@ function main{
             write-host $output
 
             $scriptBlock = {
-                param($url, $coreHeaders, $output, $location)
+                param($url, $coreHeaders, $output, $location, $insecure)
                 try{
+                    #Adopt parent process certificate policy
+                    If ($insecure.ToLower() -eq "true")
+                    {
+                        try
+                        {
+                            #Break indentation format. IDE doesn't like it.
+                            add-type @"
+                            using System.Net;
+                            using System.Security.Cryptography.X509Certificates;
+                            public class TrustAllCertsPolicy : ICertificatePolicy {
+                                public bool CheckValidationResult(
+                                    ServicePoint srvPoint, X509Certificate certificate,
+                                    WebRequest request, int certificateProblem) {
+                                    return true;
+                                }
+                            }
+"@
+                            $AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+                            [System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
+                            [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+                            Write-Host "Certificate validation is being ignored."
+                        }
+                        catch{
+                            Write-Error "Failed to ignore certificate validation."
+                            Write-Error $_.Exception|format-list -force
+                            exit 1
+                        }
+                    }
                     
                     Invoke-RestMethod -Uri $url -Headers $coreHeaders -OutFile $output
-                    '''
+                    <#
                     echo $location | Out-File ($location + "status.txt")
-                    '''
+                    #>
 
                 }
                 catch{
                     
                     #Write-Error "Error retrieving file."
-                    echo $url | Out-File $location + "error.txt"
+                    echo $url | Out-File $($location + "error.txt")
                     
-                    echo $_ | Out-File ($location + "error.txt") -Append
+                    echo $_ | Out-File $($location + "error.txt") -Append
                     exit 1
                 }
             }
 
-            Start-Job -ScriptBlock $scriptBlock -ArgumentList $url, $coreHeaders, $output, $location
+            Start-Job -ScriptBlock $scriptBlock -ArgumentList $url, $coreHeaders, $output, $location, $insecure
 
         }
 
@@ -352,6 +380,34 @@ function main{
                 $scriptBlock = {
                     param($baseURL, $session_id, $command_id, $coreHeaders)
                     try{
+                        #Adopt parent process certificate policy
+                        If ($insecure.ToLower() -eq "true")
+                        {
+                            try
+                            {
+                                #Break indentation format. IDE doesn't like it.
+                                add-type @"
+                                using System.Net;
+                                using System.Security.Cryptography.X509Certificates;
+                                public class TrustAllCertsPolicy : ICertificatePolicy {
+                                    public bool CheckValidationResult(
+                                        ServicePoint srvPoint, X509Certificate certificate,
+                                        WebRequest request, int certificateProblem) {
+                                        return true;
+                                    }
+                                }
+"@
+                                $AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+                                [System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
+                                [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+                                Write-Host "Certificate validation is being ignored."
+                            }
+                            catch{
+                                Write-Error "Failed to ignore certificate validation."
+                                Write-Error $_.Exception|format-list -force
+                                exit 1
+                            }
+                        }
                         $url = "$baseURL/api/v1/cblr/session/$session_id/command/$command_id"
                         $response = Invoke-RestMethod -uri $url -Headers $coreHeaders
                         while($response.status -eq "pending"){
@@ -363,7 +419,7 @@ function main{
                         #Write-Host $response
                     }
                 }
-                Start-Job $scriptBlock -ArgumentList $baseURL, $session_id, $command_id, $coreHeaders
+                Start-Job $scriptBlock -ArgumentList $baseURL, $session_id, $command_id, $coreHeaders, $insecure
 
         }
 
@@ -385,8 +441,8 @@ exit 0
 # SIG # Begin signature block
 # MIIcdQYJKoZIhvcNAQcCoIIcZjCCHGICAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5ljpc0wbi4hnFVMWUjm0/9OD
-# EYSgghebMIID7jCCA1egAwIBAgIQfpPr+3zGTlnqS5p31Ab8OzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZS2DMFQxS9OzF0CdreM5WChw
+# KKugghebMIID7jCCA1egAwIBAgIQfpPr+3zGTlnqS5p31Ab8OzANBgkqhkiG9w0B
 # AQUFADCBizELMAkGA1UEBhMCWkExFTATBgNVBAgTDFdlc3Rlcm4gQ2FwZTEUMBIG
 # A1UEBxMLRHVyYmFudmlsbGUxDzANBgNVBAoTBlRoYXd0ZTEdMBsGA1UECxMUVGhh
 # d3RlIENlcnRpZmljYXRpb24xHzAdBgNVBAMTFlRoYXd0ZSBUaW1lc3RhbXBpbmcg
@@ -517,22 +573,22 @@ exit 0
 # MC4GA1UEAxMnU3ltYW50ZWMgQ2xhc3MgMyBTSEEyNTYgQ29kZSBTaWduaW5nIENB
 # AhA7fcSpOOvoChwkFo65IyOmMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
 # CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
-# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBR3BTgZ4wYFDsyCjn3O
-# 3KWZ2EHZrjANBgkqhkiG9w0BAQEFAASCAQAId1uIGSPhuPz1L7LhfKYP4HlA8Rhc
-# 2+9s3MDe7mt9kv+cF/55WGEU2PoQ46hcThL64MpnFdt1hxpAFdp1xu3XcfGd2UE1
-# dXE9gIkpC8s9NhT6tJQBzVZyuhhcg/uVnKF/IQowhje+n1yLBj2iAyhDBSI6kDB/
-# Vf0IrNPPXNsNZHll8aIHMNbvVwtsSSobOliWgxYb1kSE8gsUql0g0Gi5uz+zWV6f
-# pcJCy8v9r4XfxFy/ssM8+s0sWkwZXlzU3xMqVZ5/yYjdoF/k00gq1Vao1Eg9eAhx
-# ORJ7r9aulGhNfxELCE07cgZrEFHoo2QK9O1lcy37XVnFr8qOpnCrngGPoYICCzCC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTckX8SghOZpwslTsY5
+# 4dIIjqVWGTANBgkqhkiG9w0BAQEFAASCAQASxhrGzrMAue9t+99RE90eUtf0Lnkp
+# Lobg5EBMXmWPteghbLcNsmq9JphlUY3fCfiO9OcqEaTh6pAzjwtu8DIHG1iceYUh
+# GQn3NrRpuR6tO4DvhzCIkGfvmEbS40ZqrSTAD1z7uG4AtzON52wDXMZ4L5g60ic4
+# X6rJu2sebU9I8UyF0K6/OWLXBjU8cuw+RxN++VssztWiMw10+KD3OkpVF4HY9s9S
+# /+93xgnTwx2PojCUqIUJNMozdeiCp9SrjsDJnYYQaV+22fsSkQQfifSWonGryfJ5
+# Kc06QsSi7X0yefaUAH67zpPOq03nucHbg3CBCuPBYc6pFsAr3xj+P5DgoYICCzCC
 # AgcGCSqGSIb3DQEJBjGCAfgwggH0AgEBMHIwXjELMAkGA1UEBhMCVVMxHTAbBgNV
 # BAoTFFN5bWFudGVjIENvcnBvcmF0aW9uMTAwLgYDVQQDEydTeW1hbnRlYyBUaW1l
 # IFN0YW1waW5nIFNlcnZpY2VzIENBIC0gRzICEA7P9DjI/r81bgTYapgbGlAwCQYF
 # Kw4DAhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkF
-# MQ8XDTE3MTEyNDE3MjgyOFowIwYJKoZIhvcNAQkEMRYEFCJWNRuJLgoeUZaf6qxF
-# h5PAlkthMA0GCSqGSIb3DQEBAQUABIIBAGkZPr2x/NeLJNyzM63fOapzndxSHxYL
-# r+94lcVhYA3yuQyMk2EuDX0xlJ+LEmnhmdn3Flvcsfb9Xn3k3X7/a/GnIA1BDxEP
-# uVnKr4yzfenUmRJixfPDeFvJEOGJDHO1UZy2Om0MoNznyMFqmwT8rmJGP2Spq606
-# 509uh6328PbvRBwM+vX/j+iwnfFnp23yyn/K4a40WOW6OKr53aZVmVKt5PY77lzn
-# QhNXOSnYTvC5qlE/tbhZtO8B/yKtcO1w83k++2ICnIq0AkXFKVLHQAyPk5s40Blt
-# eI2mK18C1820aL8hRUxPyLjoRj1o6aCh6YBBxmti7d53Y5eiP/WgxM0=
+# MQ8XDTE3MTEyNDE4NTkwMVowIwYJKoZIhvcNAQkEMRYEFOZ4xN90JzI+KjldJp2Q
+# zvzUsHPzMA0GCSqGSIb3DQEBAQUABIIBABTSf6TfTFvrcScrsh0nR+GHzqm0T2h3
+# 9fo31R2ly9Y+D4cTiKnAGE7Lg4sTjBDDhqhPIJh2dEMOqgnn5XcDtD1mklJI0iS/
+# sSmhzp1hawmzMCPREo82acTvEC2iDhZSMM/ew45CwoV6GJ6rP4Ebb65dqg2BuI5k
+# sEJO7++xslgRHHchd13h+ramms/8QLvhUz97M/w7KoiNAwmexnpYiL8t8cSKxdLG
+# MadB289w6d7kU9K889mNfwZLwLLQs0Xbj+UUChUUHtXJyjWFdMMuVYsZ6MMYWIkO
+# P49wD009T4zy3WVhxTE7smcvuXZjmvz8MBEuarixQvHrC1GUUX3sf4o=
 # SIG # End signature block
