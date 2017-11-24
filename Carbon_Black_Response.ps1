@@ -18,7 +18,7 @@ Param
     [string]$key,
     [string]$location,
     [string]$baseURL,
-    [switch]$Insecure = $false
+    [string]$insecure = $false
 )
 
 $coreHeaders = @{
@@ -26,28 +26,32 @@ $coreHeaders = @{
     "Content-Type"="application/json";
 }
 
+#-----------------------------------------------------------------------------------------
+#-------------------------------------------HELP------------------------------------------
+#-----------------------------------------------------------------------------------------
+
 $helpMessage = @"
 This script is designed to automate certain functions within Carbon Black Live Response.
-Through a series of API calls the script can perform and array of functions.\
+Through a series of API calls the script can perform and array of functions.
 
-The script accepts up to 4 arguments. They are (in order) as follows
-    - The hostname of the system you wish to interact with
-    - The command you would like to perform
-    - The unique parameter for each command
-    - The insecure flag to ignore self-signed certificate errors and SSL/TLS Protocol errors
+The script requires the following arguments at a minimum:
+    - hostname: The hostname of the system you wish to interact with
+    - command: The command you would like to perform
+    - object: The unique parameter for each command
+    - key: An administrator account API key (preferably with Global Administrator)
+    - baseURL: The base url for your Carbon Black server
 
-Example: 'Carbon_Black_Response.ps1' PW3797 isolate true -Insecure
-                                     ^      ^       ^         ^
-                                     |      |       |         |
-                                  Hostname  |       |         |
-                                            |       |         |
-                                          Command   |         |
-                                                    |         |
-                                             Command Object   |
-                                                              |
-                                             Ignore Certificate and Protocol Errors
+There are some additional arguments that may be required or are optional in the case of the
+self-signed certificates flag [insecure]. These are the following:
+    - location: File path for target output or file to access (required for 'delete')
+    - insecure: Optional flag to disable ssl/tls validation
+        ^ Use this if your Carbon Black server uses self-signed certificates
 
-    The above example would enable isolation on the system PW3797
+Example: .\Carbon_Black_Response.ps1 -hostname 'acme-computer' -key '<redacted>' \
+    -command 'isolate' -object 'false' -baseURL 'https://carbon.acme.com:1234' \
+    -insecure 'true'
+
+    The above example would enable isolation on the system acme-computer
 
 ***Below is a list and description of the current commands***
 
@@ -97,7 +101,43 @@ ps - List all current processes on targeted system
 "@
 
 #-----------------------------------------------------------------------------------------
-#-------------------------------------------HELP------------------------------------------
+#---------------------------------------End of HELP---------------------------------------
+#-----------------------------------------------------------------------------------------
+
+
+#-----------------------------------------------------------------------------------------
+#-------------------------------Ignore Self-Signed Certificates---------------------------
+#-----------------------------------------------------------------------------------------
+
+If ($insecure.ToLower() -eq "true")
+{
+    try
+    {
+        #Break indentation format. IDE doesn't like it.
+        add-type @"
+        using System.Net;
+        using System.Security.Cryptography.X509Certificates;
+        public class TrustAllCertsPolicy : ICertificatePolicy {
+            public bool CheckValidationResult(
+                ServicePoint srvPoint, X509Certificate certificate,
+                WebRequest request, int certificateProblem) {
+                return true;
+            }
+        }
+"@
+        $AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+        [System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
+        [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+        Write-Host "Certificate validation is being ignored."
+    }
+    catch{
+        Write-Error "Failed to ignore certificate validation."
+        Write-Error $_.Exception|format-list -force
+        exit 1
+    }
+}
+#-----------------------------------------------------------------------------------------
+#-------------------------------End of Ignore Self-Signed Certificates--------------------
 #-----------------------------------------------------------------------------------------
 
 function wait_for_session_active($Session_id){
@@ -136,6 +176,7 @@ function fetch_command($session_id, $command_id){
 function acquire_sensor_id($Hostname){
     Write-Host "Acquiring sensor ID..."
     $url = "$baseURL/api/v1/sensor?hostname=$Hostname"
+    Write-Host "url: $url"
     $response = Invoke-RestMethod -uri $url -Headers $coreHeaders
     Write-Host $response
     #In case cb deployment is corrupt with client device having multiple ID's
@@ -196,40 +237,7 @@ function execute_response($body){
 }
 
 function main{
-If ($Insecure == $true)
-{
-#-----------------------------------------------------------------------------------------
-#-------------------------------Ignore Self-Signed Certificates---------------------------
-#-----------------------------------------------------------------------------------------
-    try
-    {
-    if (-not ([System.Management.Automation.PSTypeName]'ServerCertificateValidationCallback').Type)
-    {
-        add-type @"
-        using System.Net;
-        using System.Security.Cryptography.X509Certificates;
-        public class TrustAllCertsPolicy : ICertificatePolicy {
-            public bool CheckValidationResult(
-                ServicePoint srvPoint, X509Certificate certificate,
-                WebRequest request, int certificateProblem) {
-                return true;
-            }
-        }
-"@
-        Add-Type $certCallback
-    }
-    $AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
-    [System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
-    [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
-    }
-    catch{
-            Write-Error "Bad URL: $statusURL"
-            exit 1
-        }
-}
-#-----------------------------------------------------------------------------------------
-#-------------------------------End of Ignore Self-Signed Certificates--------------------
-#-----------------------------------------------------------------------------------------
+
     #Remove / at end of baseURL if present to avoid issues with URL 
     if($baseURL[$baseURL.length - 1] -eq '/'){
         $baseURL = $baseURL.Substring(0, $baseURL.length - 1)
@@ -308,7 +316,7 @@ If ($Insecure == $true)
             $sensor_id = acquire_sensor_id($hostname)
             $url = "$baseURL/api/v1/sensor/$sensor_id"
             $response = Invoke-RestMethod -Uri $url -Headers $coreHeaders
-
+            Write-Host "Handling isolation..."
             if($object.ToLower() -eq "false"){
                 $response.network_isolation_enabled = $False
             }
@@ -374,6 +382,8 @@ main
 
 Write-Host "$command on $object for host $hostname executed successfully."
 exit 0
+
+
 # SIG # Begin signature block
 # MIIdxgYJKoZIhvcNAQcCoIIdtzCCHbMCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
