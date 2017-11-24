@@ -378,7 +378,7 @@ function main{
                 $command_id = $response.id
 
                 $scriptBlock = {
-                    param($baseURL, $session_id, $command_id, $coreHeaders)
+                    param($baseURL, $session_id, $command_id, $coreHeaders, $insecure)
                     try{
                         #Adopt parent process certificate policy
                         If ($insecure.ToLower() -eq "true")
@@ -441,8 +441,8 @@ exit 0
 # SIG # Begin signature block
 # MIIcdQYJKoZIhvcNAQcCoIIcZjCCHGICAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZS2DMFQxS9OzF0CdreM5WChw
-# KKugghebMIID7jCCA1egAwIBAgIQfpPr+3zGTlnqS5p31Ab8OzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMVnl1vA0iYuHvuGff8va3f7E
+# kg+gghebMIID7jCCA1egAwIBAgIQfpPr+3zGTlnqS5p31Ab8OzANBgkqhkiG9w0B
 # AQUFADCBizELMAkGA1UEBhMCWkExFTATBgNVBAgTDFdlc3Rlcm4gQ2FwZTEUMBIG
 # A1UEBxMLRHVyYmFudmlsbGUxDzANBgNVBAoTBlRoYXd0ZTEdMBsGA1UECxMUVGhh
 # d3RlIENlcnRpZmljYXRpb24xHzAdBgNVBAMTFlRoYXd0ZSBUaW1lc3RhbXBpbmcg
@@ -573,22 +573,22 @@ exit 0
 # MC4GA1UEAxMnU3ltYW50ZWMgQ2xhc3MgMyBTSEEyNTYgQ29kZSBTaWduaW5nIENB
 # AhA7fcSpOOvoChwkFo65IyOmMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
 # CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
-# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTckX8SghOZpwslTsY5
-# 4dIIjqVWGTANBgkqhkiG9w0BAQEFAASCAQASxhrGzrMAue9t+99RE90eUtf0Lnkp
-# Lobg5EBMXmWPteghbLcNsmq9JphlUY3fCfiO9OcqEaTh6pAzjwtu8DIHG1iceYUh
-# GQn3NrRpuR6tO4DvhzCIkGfvmEbS40ZqrSTAD1z7uG4AtzON52wDXMZ4L5g60ic4
-# X6rJu2sebU9I8UyF0K6/OWLXBjU8cuw+RxN++VssztWiMw10+KD3OkpVF4HY9s9S
-# /+93xgnTwx2PojCUqIUJNMozdeiCp9SrjsDJnYYQaV+22fsSkQQfifSWonGryfJ5
-# Kc06QsSi7X0yefaUAH67zpPOq03nucHbg3CBCuPBYc6pFsAr3xj+P5DgoYICCzCC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTpFOIScFPKuvXH9Ktm
+# fhIsSZXIUDANBgkqhkiG9w0BAQEFAASCAQB6jLjadOzi4fvFphCUnu5zVu/o2D5A
+# S4OpD28XqOM6cOCxzH4mU3H1afJAs2XtlNFc3e4+VqHu5HIDAzlmvej7cRnFb43C
+# RUgZtZDzPFceofEIStTT5sz5qQRoH5Y18SvITPjxLt1igAGGvb4vMQXBdYSkN6AA
+# uo8jn24GXrB82IV3Qh/kcLYIjjl82JtmlAunosnnlnlxfAKPsX2jtmgchurkcG7u
+# oRaXKx+Wy5r7mK4De9zmmfEgBg5/cCJ/Z1PCHdG2kEgt6/++fIJ718ro9OpxIyth
+# 4q/a+F+o3bIcBVXN0psI1iJgicsMssdTkvx9a2xZ9Hst/jtAOyOGw4UVoYICCzCC
 # AgcGCSqGSIb3DQEJBjGCAfgwggH0AgEBMHIwXjELMAkGA1UEBhMCVVMxHTAbBgNV
 # BAoTFFN5bWFudGVjIENvcnBvcmF0aW9uMTAwLgYDVQQDEydTeW1hbnRlYyBUaW1l
 # IFN0YW1waW5nIFNlcnZpY2VzIENBIC0gRzICEA7P9DjI/r81bgTYapgbGlAwCQYF
 # Kw4DAhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkF
-# MQ8XDTE3MTEyNDE4NTkwMVowIwYJKoZIhvcNAQkEMRYEFOZ4xN90JzI+KjldJp2Q
-# zvzUsHPzMA0GCSqGSIb3DQEBAQUABIIBABTSf6TfTFvrcScrsh0nR+GHzqm0T2h3
-# 9fo31R2ly9Y+D4cTiKnAGE7Lg4sTjBDDhqhPIJh2dEMOqgnn5XcDtD1mklJI0iS/
-# sSmhzp1hawmzMCPREo82acTvEC2iDhZSMM/ew45CwoV6GJ6rP4Ebb65dqg2BuI5k
-# sEJO7++xslgRHHchd13h+ramms/8QLvhUz97M/w7KoiNAwmexnpYiL8t8cSKxdLG
-# MadB289w6d7kU9K889mNfwZLwLLQs0Xbj+UUChUUHtXJyjWFdMMuVYsZ6MMYWIkO
-# P49wD009T4zy3WVhxTE7smcvuXZjmvz8MBEuarixQvHrC1GUUX3sf4o=
+# MQ8XDTE3MTEyNDE5MDg1OVowIwYJKoZIhvcNAQkEMRYEFN7HJBsU8TFeAd2nGBdH
+# JubZX8t4MA0GCSqGSIb3DQEBAQUABIIBAIa6vatZwVWS+TUqw6VshiDxUqhTVBaS
+# 5ZnwiWZZJhpRTsYUHk+Rzye7I/y+Q00tsfSAIMrQttEaD20ag3Lx+ICjQbRLamBc
+# HqfOkfF7v3Zfm/yyyXZjY1fuwilTAqW0uiJz91hK2kaO22GYRRjn74jJWx2rSU1m
+# Ae4g7asqEcmH72cb1oJPLTAhsORY0032iXdFuyN0CoBdikf32gjFkMIjWm/7Xs19
+# Txzrv1uOmbIJ3Y1Lab0riDdjOm2dJwJz1urlkrZWPH9r46eOGxTwarmMkH4KqWEs
+# vltMLTOnne1BxtVWuux1GaXQr0uwpqvvjhl1NRuZy0j2px8GFKZA6wg=
 # SIG # End signature block
