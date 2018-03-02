@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<remv1:Remediation-Plugin xmlns:remv1="RemediationVersion1.xsd" Name="Carbon Black Response" Version="1" IsLogRhythmPlugin="true" Guid="be0d9978-692f-48ee-b8a9-dc046b05e76f">
+<remv1:Remediation-Plugin xmlns:remv1="RemediationVersion1.xsd" Name="Cb Response" Version="1" IsLogRhythmPlugin="true" Guid="0f4ec3f0-ae7d-486b-bbea-f33ed3acee71">
   <!-- Kill Process on Remote System -->
-  <remv1:Action Name="Kill Process" Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe">
-    <remv1:ConstantParameter Name="Script" Switch="-file Carbon_Black_Response.ps1" Order="1" />
+  <remv1:Action Name="Cb Response : Kill Process" Command="powershell.exe">
+    <remv1:ConstantParameter Name="Script" Switch="-file Cb_Response.ps1" Order="1" />
     <remv1:StringParameter Name="Host" Switch="-hostname " Order="2">
       <remv1:DefaultInput>
         <remv1:DHostName />
@@ -20,8 +20,8 @@
     <remv1:StringParameter Name="Carbon Black Server URL" Switch="-baseURL " Order="6" />
   </remv1:Action>
   <!-- Get File on Remote Host -->
-  <remv1:Action Name="Get File" Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe">
-    <remv1:ConstantParameter Name="Script" Switch="-file Carbon_Black_Response.ps1" Order="1" />
+  <remv1:Action Name="Cb Response : Get File" Command="powershell.exe">
+    <remv1:ConstantParameter Name="Script" Switch="-file Cb_Response.ps1" Order="1" />
     <remv1:StringParameter Name="Host" Switch="-hostname " Order="2">
       <remv1:DefaultInput>
         <remv1:DHostName />
@@ -40,8 +40,8 @@
     <remv1:StringParameter Name="Carbon Black Server URL" Switch="-baseURL " Order="7" />
   </remv1:Action>
   <!-- Isolate Remote Host Networking -->
-  <remv1:Action Name="Isolate Host" Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe">
-    <remv1:ConstantParameter Name="Script" Switch="-file Carbon_Black_Response.ps1" Order="1" />
+  <remv1:Action Name="Cb Response : Isolate Host" Command="powershell.exe">
+    <remv1:ConstantParameter Name="Script" Switch="-file Cb_Response.ps1" Order="1" />
     <remv1:StringParameter Name="Host" Switch="-hostname " Order="2">
       <remv1:DefaultInput>
         <remv1:DHostName />
@@ -59,8 +59,8 @@
     <remv1:StringParameter Name="Carbon Black Server URL" Switch="-baseURL " Order="6" />
   </remv1:Action>
   <!-- Delete File on Remote Host -->
-  <remv1:Action Name="Delete File" Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe">
-    <remv1:ConstantParameter Name="Script" Switch="-file Carbon_Black_Response.ps1" Order="1" />
+  <remv1:Action Name="Cb Response : Delete File" Command="powershell.exe">
+    <remv1:ConstantParameter Name="Script" Switch="-file Cb_Response.ps1" Order="1" />
     <remv1:StringParameter Name="Host" Switch="-hostname " Order="2">
       <remv1:DefaultInput>
         <remv1:DHostName />
@@ -78,8 +78,8 @@
     <remv1:StringParameter Name="Carbon Black Server URL" Switch="-baseURL " Order="6" />
   </remv1:Action>
   <!-- Dump Remote Host Memory -->
-  <remv1:Action Name="Dump Memory" Command="C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe">
-    <remv1:ConstantParameter Name="Script" Switch="-file Carbon_Black_Response.ps1" Order="1" />
+  <remv1:Action Name="Cb Response : Dump Memory" Command="powershell.exe">
+    <remv1:ConstantParameter Name="Script" Switch="-file Cb_Response.ps1" Order="1" />
     <remv1:StringParameter Name="Host" Switch="-hostname " Order="2">
       <remv1:DefaultInput>
         <remv1:DHostName />
